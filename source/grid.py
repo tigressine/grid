@@ -62,26 +62,3 @@ class Grid:
     def __len__(self):
         """Return count of all objects in grid."""
         return sum(len(row) for row in self.grid)
-
-
-grid = Grid()
-
-grid[0] = [x for x in range(10)]
-grid[1] = [x for x in reversed(range(0, 10))]
-grid[1, 3] = 9001
-grid[2] = "hello"
-grid[2, 1] = "world"
-grid[4, 4] = "generated some garbage"
-grid[5] = []
-grid[6] = []
-grid[-1] = "spooky"
-grid[-1, 6] = "like wut"
-
-print("Grid:")
-print(grid)
-print("\nSelected lines and items:")
-print(grid[1, 3])
-print(grid[-1])
-print(grid[4])
-print(grid[5])
-print(len(grid))
