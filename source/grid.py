@@ -6,9 +6,12 @@ class Grid:
     represents the 'width,' or number of items down the current row to traverse.
     """
     
-    def __init__(self):
+    def __init__(self, height=0, width=0):
         """Initialize a new grid object."""
-        self.grid = [[]]
+        self.grid = [[None for w in range(width)] for h in range(height)]
+        self.height = height
+        self.width = width
+        self.items = 0
 
     def __getitem__(self, index):
         """Retrieve item from grid.
@@ -23,21 +26,34 @@ class Grid:
     def __setitem__(self, index, item):
         """Set item or row in grid based on provided index."""
         
-        # Check if the index is actually a tuple of indices.
+        # Check if the index is a tuple of indices.
         if isinstance(index, tuple):
-            # Generate enough rows to handle the provided index.
-            while index[0] >= len(self.grid):
-                self.grid.append([])
+            # Extend number of rows to accommodate given height index.
+            heightDiff = (index[0] + 1) - self.height
+            if heightDiff > 0:
+                newRows = [[None for w in range(self.width)] for h in range(heightDiff)]
+                self.grid.extend(newRows)
+                self.height = index[0] + 1
 
-            # Generate enough items in the requested row to support
-            # the provided index.
-            while index[1] >= len(self.grid[index[0]]):
-                self.grid[index[0]].append(None)
+            # Extend all rows to accommodate given width index.
+            widthDiff = (index[1] + 1) - self.width
+            if widthDiff > 0:
+                for row in self.grid:
+                    row.extend([None for w in range(widthDiff)])
+                self.width = index[1] + 1
 
+            # Change items count based on what is being inserted and where.
+            if self.grid[index[0]][index[1]] is None:
+                if item is not None:
+                    self.items += 1
+            else:
+                if item is None:
+                    self.items -= 1
+           
             self.grid[index[0]][index[1]] = item
-
+            
         # If index is solo, then item is for an entire row.
-        elif isinstance(index, int):
+        elif isinstance(index, int):#needs to be reworked
             # Generate enough rows to handle the provided index.
             while index >= len(self.grid):
                 self.grid.append([])
@@ -47,6 +63,7 @@ class Grid:
                 self.grid[index] = item
             else:
                 self.grid[index] = [item]
+            self.items += 1 if item is not None else -1
 
     def __str__(self):
         """Return a printable string representation of the grid."""
@@ -61,4 +78,4 @@ class Grid:
 
     def __len__(self):
         """Return count of all objects in grid."""
-        return sum(len(row) for row in self.grid)
+        return self.items

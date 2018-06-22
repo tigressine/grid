@@ -14,12 +14,12 @@ myGrid[2] = 3.1415926
 myGrid[10, 5] = True
 
 # Even assign backwards!
-myGrid[-1, 4] = False
+myGrid[-1, -4] = False
 myGrid[-2, 0] = "crazy right?"
 
 print(myGrid)
 print("\nSpecific accesses:")
 print(myGrid[0])
 print(myGrid[1, 5])
-print(myGrid[-1, 4])
+print(myGrid[-1, -4])
 print("\nSize is {0}".format(len(myGrid)))
