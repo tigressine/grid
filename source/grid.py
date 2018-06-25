@@ -28,19 +28,8 @@ class Grid:
         
         # Check if the index is a tuple of indices.
         if isinstance(index, tuple):
-            # Extend number of rows to accommodate given height index.
-            heightDiff = (index[0] + 1) - self.height
-            if heightDiff > 0:
-                newRows = [[None for w in range(self.width)] for h in range(heightDiff)]
-                self.grid.extend(newRows)
-                self.height = index[0] + 1
-
-            # Extend all rows to accommodate given width index.
-            widthDiff = (index[1] + 1) - self.width
-            if widthDiff > 0:
-                for row in self.grid:
-                    row.extend([None for w in range(widthDiff)])
-                self.width = index[1] + 1
+            self.increaseHeight(index[0] + 1)
+            self.increaseWidth(index[1] + 1)
 
             # Change items count based on what is being inserted and where.
             if self.grid[index[0]][index[1]] is None:
@@ -53,17 +42,20 @@ class Grid:
             self.grid[index[0]][index[1]] = item
             
         # If index is solo, then item is for an entire row.
-        elif isinstance(index, int):#needs to be reworked
-            # Generate enough rows to handle the provided index.
-            while index >= len(self.grid):
-                self.grid.append([])
+        elif isinstance(index, int):
+            if not isinstance(item, list):
+                item = [None if w is not 0 else item for w in range(self.width)]
+            
+            self.increaseHeight(index + 1) 
+            itemCount = self.countItems(item)
+            deletedCount = self.countItems(self.grid[index])
+       
+            self.items -= deletedCount
+            self.items += itemCount
 
-            # Make sure that the item inserted is in list form.
-            if isinstance(item, list):
-                self.grid[index] = item
-            else:
-                self.grid[index] = [item]
-            self.items += 1 if item is not None else -1
+            self.grid[index] = item
+
+            self.increaseWidth(len(item))#this is too wide
 
     def __str__(self):
         """Return a printable string representation of the grid."""
@@ -79,3 +71,25 @@ class Grid:
     def __len__(self):
         """Return count of all objects in grid."""
         return self.items
+
+    def countItems(self, row):
+        count = 0
+        for item in row:
+            if item is not None:
+                count += 1
+
+        return count
+
+    def increaseHeight(self, height):
+        heightDiff = height - self.height
+        if heightDiff > 0:
+            newRows = [[None for w in range(self.width)] for h in range(heightDiff)]
+            self.grid.extend(newRows)
+            self.height = height
+    
+    def increaseWidth(self, length):
+        widthDiff = length - self.width
+        if widthDiff > 0:
+            for row in self.grid:
+                row.extend([None for w in range(widthDiff)])
+            self.width = length
