@@ -16,7 +16,7 @@ class Grid:
 
     def __getitem__(self, index):
         """Return item at index, if it exists."""
-        index = self.sanitizeIndex(index)
+        index = self.sanitize_index(index)
 
         # Height bounds check.
         if index[0] < 0 or index[0] >= self.height:
@@ -24,7 +24,7 @@ class Grid:
 
         # If the length of index is 1, then the entire row is desired.
         if len(index) == 1:
-            return self.makeList(self.grid[index[0]])
+            return self.make_list(self.grid[index[0]])
 
         # Else a specific item is desired. Return that item if it exists.
         elif len(index) == 2 and index[1] in self.grid[index[0]]:
@@ -36,8 +36,8 @@ class Grid:
 
     def __setitem__(self, index, item):
         """Set an item or list of items at index in the grid."""
-        index = self.sanitizeIndex(index)
-      
+        index = self.sanitize_index(index)
+
         # Height bounds check.
         if index[0] < 0:
             return
@@ -46,7 +46,7 @@ class Grid:
         while index[0] >= self.height:
             self.grid.append({})
             self.height += 1
-      
+
         # If length of index is 1, then entire row is being set.
         if len(index) == 1:
             # Subtract the count of all the items in the row that currently
@@ -60,7 +60,7 @@ class Grid:
             for i, value in enumerate(item):
                 if value is not None:
                     self.grid[index[0]][i] = value
-                    
+
                     # If the inserting index forces the row to be wider, change
                     # the width of the whole grid.
                     if i >= self.width:
@@ -68,14 +68,14 @@ class Grid:
 
             # Add the count of all items in the new row to the total item count.
             self.items += len(self.grid[index[0]])
-       
+
         # Else if length of index is 2, a single item is being set.
         elif len(index) == 2:
             # If the item forces the row to be wider, change the width of
             # the whole grid.
             if index[1] >= self.width:
                 self.width = index[1] + 1
-          
+
             # Adjust the items count appropriately based on the change being made.
             if item is None:
                 if index[1] in self.grid[index[0]]:
@@ -87,8 +87,19 @@ class Grid:
             self.grid[index[0]][index[1]] = item
 
     def __str__(self):
-        """"""
-        pass
+        """Return a simple string representation of the grid."""
+        result  = ""
+
+        for row in range(self.height):
+            for column in range(self.width):
+                cell_value = self[row, column]
+                if cell_value is None:
+                    result += '{:<15s}'.format("None")
+                else:
+                    result += '{:<15s}'.format(str(self[row, column]))
+            result += '\n'
+
+        return result
 
     def __len__(self):
         """Return the item count of the grid."""
@@ -96,13 +107,13 @@ class Grid:
 
     def capacity(self):
         """Return the area of the grid.
-        
+
         The term "capacity" is misleading here since the grid will grow
         to whatever size it needs to be.
         """
         return self.width * self.height
 
-    def sanitizeIndex(self, index):
+    def sanitize_index(self, index):
         """Sanitize the provided index."""
 
         # Make index a list from either a tuple or a single integer.
@@ -113,11 +124,11 @@ class Grid:
 
         return index
 
-    def makeList(self, gridRow):
+    def make_list(self, grid_row):
         """Create a list from a dictionary of indexed items."""
         row = [None for item in range(self.width)]
 
-        for item in gridRow.keys():
-            row[item] = gridRow[item]
-        
+        for item in grid_row.keys():
+            row[item] = grid_row[item]
+
         return row
