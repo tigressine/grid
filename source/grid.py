@@ -2,104 +2,56 @@ class Grid:
     """A self-growing 2D array class.
 
     Grids are actually stored as an array of dictionaries. This means that
-    very sparse 2D arrays (e.g. arrays with lots of None values) can be stored 
+    very sparse 2D arrays (e.g. arrays with lots of None values) can be stored
     efficiently using this class, while maintaining an expected runtime of O(1)
     for insertions and lookups.
     """
 
     def __init__(self):
         """Initialize the grid."""
-        self.grid = [{}]
-        self.height = 0
-        self.width = 0
         self.items = 0
+        self.width = 0
+        self.height = 0
+        self.grid = [{}]
 
-    def __getitem__(self, index):
-        """Return item at index, if it exists."""
-        index = self.sanitize_index(index)
+    def __getitem__(self, indices):
+        """Return item at given indices, if it exists."""
+        indices = self.__sanitize_indices(indices)
 
-        # Height bounds check.
-        if index[0] < 0 or index[0] >= self.height:
-            return None
-
-        # If the length of index is 1, then the entire row is desired.
-        if len(index) == 1:
-            return self.make_list(self.grid[index[0]])
+        # If there's only a single index, then the entire row is desired.
+        if len(indices) == 1:
+            return self.__make_list(self.grid[indices[0]])
 
         # Else a specific item is desired. Return that item if it exists.
-        elif len(index) == 2 and index[1] in self.grid[index[0]]:
-            return self.grid[index[0]][index[1]]
+        return self.grid[indices[0]][indices[1]]
 
-        # Else something went wrong or the index didn't exist.
-        else:
-            return None
+    def __setitem__(self, indices, item):
+        """Set an item or list of items at the given indices in the grid."""
+        indices = self.__sanitize_indices(indices)
 
-    def __setitem__(self, index, item):
-        """Set an item or list of items at index in the grid."""
-        index = self.sanitize_index(index)
-
-        # Height bounds check.
-        if index[0] < 0:
-            return
-
-        # Add rows until the grid can accommodate the index's height.
-        while index[0] >= self.height:
+        # Add rows until the grid can accommodate the indices's height.
+        while indices[0] >= self.height:
             self.grid.append({})
             self.height += 1
 
-        # If length of index is 1, then entire row is being set.
-        if len(index) == 1:
-            # Subtract the count of all the items in the row that currently
-            # exists at index[0].
-            self.items -= len(self.grid[index[0]])
-
-            # Reset the row.
-            self.grid[index[0]] = {}
-
-            # Add each value of the item list to the grid at the correct index.
-            for i, value in enumerate(item):
-                if value is not None:
-                    self.grid[index[0]][i] = value
-
-                    # If the inserting index forces the row to be wider, change
-                    # the width of the whole grid.
-                    if i >= self.width:
-                        self.width = i + 1
-
-            # Add the count of all items in the new row to the total item count.
-            self.items += len(self.grid[index[0]])
-
-        # Else if length of index is 2, a single item is being set.
-        elif len(index) == 2:
-            # If the item forces the row to be wider, change the width of
-            # the whole grid.
-            if index[1] >= self.width:
-                self.width = index[1] + 1
-
-            # Adjust the items count appropriately based on the change being made.
-            if item is None:
-                if index[1] in self.grid[index[0]]:
-                    self.items -= 1
-            else:
-                if index[1] not in self.grid[index[0]]:
-                    self.items += 1
-
-            self.grid[index[0]][index[1]] = item
+        if len(indices) == 1:
+            self.__set_row(indices[0], item)
+        else:
+            self.__set_item(indices, item)
 
     def __str__(self):
         """Return a simple string representation of the grid."""
-        result  = ""
+        string = ""
 
         for row in range(self.height):
             for column in range(self.width):
-                cell_value = self[row, column]
-                if cell_value is None:
-                    result += '{:<15s}'.format("None")
+                if column not in self.grid[row]:
+                    string += '{:<15s}'.format("None")
                 else:
-                    result += '{:<15s}'.format(str(self[row, column]))
-            result += '\n'
+                    string += '{:<15s}'.format(str(self.grid[row][column]))
+            string += '\n' if row < self.height - 1 else ''
 
-        return result
+        return string
 
     def __len__(self):
         """Return the item count of the grid."""
@@ -113,20 +65,85 @@ class Grid:
         """
         return self.width * self.height
 
-    def sanitize_index(self, index):
-        """Sanitize the provided index."""
+    def __set_item(self, indices, item):
+        """Set an item in the grid."""
+        if indices[1] >= self.width:
+            self.width = indices[1] + 1
 
-        # Make index a list from either a tuple or a single integer.
-        index = list(index) if isinstance(index, tuple) else [index]
+        # Adjust the items count appropriately based on the change being made.
+        if item is None and indices[1] in self.grid[indices[0]]:
+            self.items -= 1
+        elif item is not None and indices[1] not in self.grid[indices[0]]:
+            self.items += 1
 
-        # If height is negative, make it positive.
-        index[0] += self.height if index[0] < 0 else 0
+        self.grid[indices[0]][indices[1]] = item
 
-        return index
+    def __set_row(self, index, row):
+        """Set an entire row in the grid."""
+        self.items -= len(self.grid[index])
 
-    def make_list(self, grid_row):
+        # Reset the row.
+        self.grid[index] = {}
+
+        # If the row is not a tuple or a list, make it an iterable list.
+        if not isinstance(row, tuple) and not isinstance(row, list):
+            row = [row]
+
+        # Add each value of the item list to the grid at the correct indices.
+        for key, value in enumerate(row):
+            if value is not None:
+                self.grid[index][key] = value
+
+                # If the inserting indices forces the row to be wider, change
+                # the width of the whole grid.
+                if key >= self.width:
+                    self.width = key + 1
+
+        # Add the count of all items in the new row to the total item count.
+        self.items += len(self.grid[index])
+
+    def __sanitize_indices(self, indices):
+        """Sanitize the provided indices.
+
+        The indices can be a tuple of integers, or a single integer. This
+        function always returns a list, either with one or two indices.
+        Further, the indices will always be positive.
+        """
+
+        # Confirm the indices are of the proper type and put them into a list.
+        if isinstance(indices, tuple):
+            if isinstance(indices[0], int) and isinstance(indices[1], int):
+                indices = list(indices)
+                # If the height index is negative, convert to the
+                # positive analog.
+                indices[1] += self.width if indices[1] < 0 else 0
+            else:
+                raise TypeError('Grid can only be indexed by integers.')
+
+            # If the width index was so negative as to remain negative after
+            # adding the width of the whole grid, then throw an error.
+            if indices[1] < 0:
+                raise IndexError('Negative index is out of bounds.')
+
+        elif isinstance(indices, int):
+            indices = [indices]
+
+        else:
+            raise TypeError('Grid can only be indexed by integers.')
+
+        # If the height index is negative, convert to the positive analog.
+        indices[0] += self.height if indices[0] < 0 else 0
+
+        # If the height index was so negative as to remain negative after
+        # adding the height of the whole grid, then throw an error.
+        if indices[0] < 0:
+            raise IndexError("Negative index is out of bounds")
+
+        return indices
+
+    def __make_list(self, grid_row):
         """Create a list from a dictionary of indexed items."""
-        row = [None for item in range(self.width)]
+        row = [None for each in range(self.width)]
 
         for item in grid_row.keys():
             row[item] = grid_row[item]
