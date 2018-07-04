@@ -1,51 +1,54 @@
 # grid
-This Python class provides self-growing, coordinate-like list functionality where items can be accessed by indexing. See the example below.
+This Python class provides a self-growing matrix where items can be accessed with standard, pythonic indexing. See the example below.
 
 # example
 ```
-myGrid = Grid()
+import grid
+
+example = grid.Grid()
 
 # Assign items using a [y, x] indexing scheme.
-myGrid[0, 0] = "hello"
-myGrid[0, 1] = "world"
+example[0, 0] = 'hello'
+example[0, 1] = 'world'
 
-# Assign entire rows
-myGrid[1] = [x for x in range(10)]
-myGrid[2] = 3.1415926
+# Assign entire rows.
+example[1] = [x for x in range(5)]
+example[2] = 3.1415926
+example[3] = ('a', 'b', 'c')
 
 # Assign really far out of bounds because why not?
-myGrid[10, 5] = True
+example[1, 6] = True
 
 # Even assign backwards!
-myGrid[-1, 4] = False
-myGrid[-2, 0] = "crazy right?"
+example[-1, -3] = False
+example[-2, 1] = 'crazy right?'
 
-print(myGrid)
-print("\nSpecific accesses:")
-print(myGrid[0])
-print(myGrid[1, 5])
-print(myGrid[-1, 4])
-print("\nSize is {0}".format(len(myGrid)))
+print(example)
+print('\nSize is {0}'.format(len(example)))
+print('Capacity is {0}'.format(example.capacity()))
 
+# Removing stuff works just fine too.
+example[1, 2] = None
+example[-1] = []
+
+print(example)
+print('\nSize is {0}'.format(len(example)))
+print('Capacity is {0}'.format(example.capacity()))
 ```
-This prints out
+This prints out:
 ```
-[hello, world]
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-[3.1415926]
-[]
-[]
-[]
-[]
-[]
-[]
-[crazy right?]
-[None, None, None, None, False, True]
+hello          world          None           None           None           None           None           
+0              1              2              3              4              None           True           
+3.1415926      crazy right?   None           None           None           None           None           
+a              b              c              None           False          None           None           
 
-Specific accesses:
-['hello', 'world']
-5
-False
+Size is 14
+Capacity is 28
+hello          world          None           None           None           None           None           
+0              1              None           3              4              None           True           
+3.1415926      crazy right?   None           None           None           None           None           
+None           None           None           None           None           None           None           
 
-Size is 20
+Size is 9
+Capacity is 28
 ```
