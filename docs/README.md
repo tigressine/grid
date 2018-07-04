@@ -37,17 +37,17 @@ print('Capacity is {0}'.format(example.capacity()))
 ```
 This prints out:
 ```
-hello          world          None           None           None           None           None           
-0              1              2              3              4              None           True           
-3.1415926      crazy right?   None           None           None           None           None           
-a              b              c              None           False          None           None           
+hello          world          None           None           None           None           None
+0              1              2              3              4              None           True
+3.1415926      crazy right?   None           None           None           None           None
+a              b              c              None           False          None           None
 
 Size is 14
 Capacity is 28
-hello          world          None           None           None           None           None           
-0              1              None           3              4              None           True           
-3.1415926      crazy right?   None           None           None           None           None           
-None           None           None           None           None           None           None           
+hello          world          None           None           None           None           None
+0              1              None           3              4              None           True
+3.1415926      crazy right?   None           None           None           None           None
+None           None           None           None           None           None           None
 
 Size is 9
 Capacity is 28
